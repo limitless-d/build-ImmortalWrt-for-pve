@@ -23,6 +23,8 @@ jobs:
         run: |
           git clone https://github.com/immortalwrt/immortalwrt.git
           cd immortalwrt
+          echo "src-git istore https://github.com/linkease/istore;main" >> feeds.conf.default
+          echo "src-git openclash https://github.com/vernesong/OpenClash.git" >> feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
