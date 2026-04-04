@@ -38,7 +38,7 @@ jobs:
       - name: Fix rootfs partition size
         run: |
           cd immortalwrt
-          echo "CONFIG_TARGET_ROOTFS_PARTSIZE=2048" >> .config
+          echo "CONFIG_TARGET_ROOTFS_PARTSIZE=1536" >> .config
           echo "CONFIG_TARGET_ROOTFS_EXT4FS=y" >> .config
           make defconfig
 
