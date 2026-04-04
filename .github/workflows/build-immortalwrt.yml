@@ -1,14 +1,11 @@
-# .github/workflows/build-immortalwrt.yml
 name: Build ImmortalWrt for PVE
 
-# 1. 触发条件：允许你手动点击开始编译
 on: workflow_dispatch
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # 编译环境
+    runs-on: ubuntu-22.04
     steps:
-      # 2. 准备环境
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -18,31 +15,39 @@ jobs:
           sudo apt install -y build-essential libncurses5-dev gawk git \
           libssl-dev gettext zlib1g-dev unzip python3
 
-      # 3. 获取源码
       - name: Clone ImmortalWrt source
         run: |
           git clone https://github.com/immortalwrt/immortalwrt.git
           cd immortalwrt
+
+      - name: Add external feeds (iStore & OpenClash & Themes)
+        run: |
+          cd immortalwrt
           echo "src-git istore https://github.com/linkease/istore;main" >> feeds.conf.default
           echo "src-git openclash https://github.com/vernesong/OpenClash.git" >> feeds.conf.default
+          echo "src-git argon https://github.com/jerrykuku/luci-theme-argon.git" >> feeds.conf.default
+          cat feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      # 4. 定制固件：将你的 .config 文件放到仓库根目录
       - name: Copy config file
         run: |
           cp .config immortalwrt/.config
           cd immortalwrt
+
+      - name: Fix rootfs partition size
+        run: |
+          cd immortalwrt
+          echo "CONFIG_TARGET_ROOTFS_PARTSIZE=2048" >> .config
+          echo "CONFIG_TARGET_ROOTFS_EXT4FS=y" >> .config
           make defconfig
 
-      # 5. 开始编译
       - name: Build firmware
         run: |
           cd immortalwrt
           make download -j$(nproc)
           make -j$(nproc)
 
-      # 6. 上传成品
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
